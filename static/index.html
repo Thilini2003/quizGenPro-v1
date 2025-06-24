@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCQ Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .tab-container {
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="file"],
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            opacity: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-display {
+            padding: 12px 16px;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            text-align: center;
+            background: #f8f9ff;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .file-input-display:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .result.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .download-btn {
+            background: #28a745;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+            padding: 15px 30px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .subtopics-container {
+            margin-top: 15px;
+        }
+
+        .subtopic-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .subtopic-input input {
+            flex: 1;
+        }
+
+        .remove-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .add-subtopic-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+                border-bottom: 1px solid #f0f0f0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>MCQ Generator</h1>
+            <p>Generate Multiple Choice Questions from PDF documents or topics using AI</p>
+        </div>
+        
+        <div class="content">
+            <div class="tab-container">
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('pdf')">Upload PDF</button>
+                    <button class="tab" onclick="switchTab('topic')">Enter Topic</button>
+                </div>
+                
+                <!-- PDF Upload Tab -->
+                <div class="tab-content active" id="pdf-tab">
+                    <form id="pdf-form" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="pdf-file">Upload PDF Document</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="pdf-file" name="file" accept=".pdf" required>
+                                <div class="file-input-display" id="file-display">
+                                    Click to select PDF file or drag and drop
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="pdf-num-questions">Number of Questions</label>
+                                <input type="number" id="pdf-num-questions" name="num_questions" min="1" max="50" value="5">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="pdf-difficulty">Difficulty Level</label>
+                                <select id="pdf-difficulty" name="difficulty">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn" id="pdf-submit">Generate MCQs from PDF</button>
+                    </form>
+                </div>
+                
+                <!-- Topic Input Tab -->
+                <div class="tab-content" id="topic-tab">
+                    <form id="topic-form">
+                        <div class="form-group">
+                            <label for="topic">Main Topic</label>
+                            <input type="text" id="topic" name="topic" placeholder="e.g., World War II, Photosynthesis, Machine Learning" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="subtopics">Subtopics (Optional)</label>
+                            <div class="subtopics-container" id="subtopics-container">
+                                <div class="subtopic-input">
+                                    <input type="text" name="subtopics[]" placeholder="Enter a subtopic">
+                                    <button type="button" class="remove-btn" onclick="removeSubtopic(this)">Remove</button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-subtopic-btn" onclick="addSubtopic()">Add Subtopic</button>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="topic-num-questions">Number of Questions</label>
+                                <input type="number" id="topic-num-questions" name="num_questions" min="1" max="50" value="5">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="topic-difficulty">Difficulty Level</label>
+                                <select id="topic-difficulty" name="difficulty">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn" id="topic-submit">Generate MCQs from Topic</button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Loading State -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Generating MCQs... This may take a few moments.</p>
+            </div>
+            
+            <!-- Error Message -->
+            <div class="error" id="error"></div>
+            
+            <!-- Result -->
+            <div class="result" id="result">
+                <div class="success-message" id="success-message"></div>
+                <a href="#" class="download-btn" id="download-btn">Download PDF</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            // Hide results and errors
+            hideResults();
+        }
+
+        // File input handling
+        document.getElementById('pdf-file').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const display = document.getElementById('file-display');
+            
+            if (file) {
+                display.textContent = `Selected: ${file.name}`;
+                display.style.background = '#e8f5e8';
+                display.style.color = '#28a745';
+            } else {
+                display.textContent = 'Click to select PDF file or drag and drop';
+                display.style.background = '#f8f9ff';
+                display.style.color = '#667eea';
+            }
+        });
+
+        // Subtopic management
+        function addSubtopic() {
+            const container = document.getElementById('subtopics-container');
+            const subtopicDiv = document.createElement('div');
+            subtopicDiv.className = 'subtopic-input';
+            subtopicDiv.innerHTML = `
+                <input type="text" name="subtopics[]" placeholder="Enter a subtopic">
+                <button type="button" class="remove-btn" onclick="removeSubtopic(this)">Remove</button>
+            `;
+            container.appendChild(subtopicDiv);
+        }
+
+        function removeSubtopic(button) {
+            const container = document.getElementById('subtopics-container');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+            }
+        }
+
+        // Form submission handlers
+        document.getElementById('pdf-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            try {
+                showLoading();
+                
+                const response = await fetch('/generate-from-pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(result);
+                } else {
+                    showError(result.detail || 'An error occurred');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        document.getElementById('topic-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                topic: formData.get('topic'),
+                num_questions: parseInt(formData.get('num_questions')),
+                difficulty: formData.get('difficulty'),
+                subtopics: Array.from(formData.getAll('subtopics[]')).filter(s => s.trim() !== '')
+            };
+            
+            try {
+                showLoading();
+                
+                const response = await fetch('/generate-from-topic', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(result);
+                } else {
+                    showError(result.detail || 'An error occurred');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // UI state management
+        function showLoading() {
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('pdf-submit').disabled = true;
+            document.getElementById('topic-submit').disabled = true;
+            hideResults();
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('active');
+            document.getElementById('pdf-submit').disabled = false;
+            document.getElementById('topic-submit').disabled = false;
+        }
+
+        function showSuccess(result) {
+            const successMessage = document.getElementById('success-message');
+            const downloadBtn = document.getElementById('download-btn');
+            const resultDiv = document.getElementById('result');
+            
+            successMessage.textContent = `Successfully generated ${result.total_questions} MCQs!`;
+            downloadBtn.href = result.download_url;
+            
+            resultDiv.classList.add('active');
+            hideError();
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('active');
+            hideResults();
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.remove('active');
+        }
+
+        function hideResults() {
+            document.getElementById('result').classList.remove('active');
+            hideError();
+        }
+
+        // Drag and drop functionality
+        const fileDisplay = document.getElementById('file-display');
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileDisplay.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileDisplay.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileDisplay.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            fileDisplay.style.background = '#667eea';
+            fileDisplay.style.color = 'white';
+        }
+
+        function unhighlight(e) {
+            fileDisplay.style.background = '#f8f9ff';
+            fileDisplay.style.color = '#667eea';
+        }
+
+        fileDisplay.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                document.getElementById('pdf-file').files = files;
+                document.getElementById('pdf-file').dispatchEvent(new Event('change'));
+            }
+        }
+    </script>
+</body>
+</html>
